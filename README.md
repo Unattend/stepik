@@ -5,3 +5,4 @@
     $ minikube start
     $ ./run.sh
     
+  лучше запускать по одному из run.sh
