@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+  - name: nginx
+    protocol: TCP
+    port: 80
+  type: LoadBalancer
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: nginx
+        image: unattend/stepik-nginx:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: media-persistent-storage
+          mountPath: /usr/share/nginx/html/media
+      volumes:
+      - name: media-persistent-storage
+        persistentVolumeClaim:
+          claimName: media-pv-claim

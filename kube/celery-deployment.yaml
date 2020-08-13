@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery
+spec:
+  selector:
+    matchLabels:
+      app: celery
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: celery
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: celery
+        image: unattend/stepik-app:latest
+        imagePullPolicy: Always
+        command: ['/bin/bash', '/app/celery.sh']
+        env:
+        - name: DEBUG
+          value: "false"
+        - name: DB_HOST
+          value: mariadb-service
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: password
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: user
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: django
+              key: secret-key
+        volumeMounts:
+        - name: media-persistent-storage
+          mountPath: /media
+      volumes:
+      - name: media-persistent-storage
+        persistentVolumeClaim:
+          claimName: media-pv-claim

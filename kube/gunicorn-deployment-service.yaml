@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gunicorn-service
+spec:
+  selector:
+    app: gunicorn
+  ports:
+  - name: gunicorn
+    protocol: TCP
+    port: 8000
+  type: NodePort
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gunicorn
+spec:
+  selector:
+    matchLabels:
+      app: gunicorn
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gunicorn
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: gunicorn
+        image: unattend/stepik-app:latest
+        imagePullPolicy: Always
+        command: ['/bin/bash', '/app/gunicorn.sh']
+        env:
+        - name: DEBUG
+          value: "False"
+        - name: DB_HOST
+          value: mariadb-service
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: password
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: user
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: django
+              key: secret-key
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: media-persistent-storage
+          mountPath: /media
+      volumes:
+      - name: media-persistent-storage
+        persistentVolumeClaim:
+          claimName: media-pv-claim

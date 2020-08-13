@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <form action="" enctype="multipart/form-data" method="post">
+        <fieldset>
+            {% csrf_token %}
+            {{ form.as_table }}
+            <input type="submit" value="upload file">
+        </fieldset>
+    </form>
+
+    {% for video in videos %}
+        <div>
+		<p> {{ video.title }} <p>
+            <video width="480" height="240"
+                    {% if video.has_prew == True %}
+                        {% with '/media/prew/'|add:video.title|add:video.mix|add:".jpg" as t %}
+                   poster="{{ t }}"
+                        {% endwith %}
+                    {% else %}
+                   poster="/static/notready.png"
+                    {% endif %}>
+                {% if video.has_mp4 %}
+                    {% with '/media/mp4/'|add:video.title|add:video.mix|add:'.mp4' as t %}
+                        <source src="{{ t }}" type="video/mp4">
+                    {% endwith %}
+                {% endif %}
+                {% if video.has_webm %}
+                    {% with '/media/webm/'|add:video.title|add:video.mix|add:'.webm' as t %}
+                        <source src="{{ t }}" type="video/webm">
+                    {% endwith %}
+                {% endif %}
+		{{ video.title }}
+            </video>
+        </div>
+    {% endfor %}
+{% endblock %}
