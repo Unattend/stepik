@@ -12,7 +12,7 @@
     {% for video in videos %}
         <div>
 		<p> {{ video.title }} <p>
-            <video width="480" height="240"
+            <video width="640" height="360" controls
                     {% if video.has_prew == True %}
                         {% with '/media/prew/'|add:video.title|add:video.mix|add:".jpg" as t %}
                    poster="{{ t }}"
